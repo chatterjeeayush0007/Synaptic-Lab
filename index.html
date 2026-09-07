@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synapse Lab - BDH Synaptic Fast Weights</title>
+  <meta name="description"
+    content="Interactive exploration of Dragon Hatchling (BDH) synaptic memory via Hebbian fast weights and sparse activations." />
+  <meta property="og:title" content="Synapse Lab - BDH Synaptic Fast Weights" />
+  <meta property="og:description"
+    content="Interactive exploration of Dragon Hatchling (BDH) synaptic memory via Hebbian fast weights and sparse activations." />
+  <meta property="og:type" content="website" />
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- KaTeX CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+
+<body
+  class="bg-[#0a0e17] text-slate-100 min-h-screen flex flex-col font-['Inter'] antialiased selection:bg-sky-500/25 selection:text-sky-200">
+  <!-- Top Scientific Header -->
+  <header
+    class="sticky top-0 z-40 bg-[#0a0e17]/95 backdrop-blur-md border-b border-[#1c2638] px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2">
+        <h1 class="text-sm sm:text-base font-bold tracking-tight text-white font-['Inter']">
+          Dragon Hatchling (BDH) · Synaptic Fast-Weight Lab
+        </h1>
+        <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noreferrer"
+          class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950/70 text-sky-300 border border-sky-700/50 hover:border-sky-400 font-semibold tracking-wider inline-flex items-center gap-1 transition-colors"
+          title="Open arXiv:2509.26507 in new tab">
+          arXiv:2509.26507
+          <svg class="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+        <button id="btn-open-specs"
+          class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#152033] hover:bg-[#1c2b44] text-teal-300 border border-teal-700/40 hover:border-teal-500 font-medium tracking-wider inline-flex items-center gap-1 transition-colors cursor-pointer"
+          title="View full architectural specifications and mathematical proof">
+          <svg class="w-2.5 h-2.5 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Architecture Specs
+        </button>
+      </div>
+    </div>
+
+    <!-- Center Live LaTeX Formula Display -->
+    <div class="hidden md:flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-[#101726] border border-[#1c2638]">
+      <span class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Hebbian Update Rule:</span>
+      <div id="active-formula" class="font-mono text-xs text-sky-300 font-semibold tracking-tight">
+        M ← 1.00·M + yxᵀ
+      </div>
+    </div>
+
+    <!-- Action & View Switch Controls -->
+    <div class="flex items-center gap-2">
+      <!-- Autoplay Toggle Button -->
+      <button id="btn-autoplay"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#152033] hover:bg-[#1c2b44] text-slate-200 border border-[#1c2638] state-trans cursor-pointer shadow-sm"
+        title="Toggle Autonomous Simulation Cycling">
+        <span id="autoplay-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+        <span id="autoplay-text">Autoplay: OFF</span>
+      </button>
+
+      <!-- Walkthrough Button -->
+      <button id="btn-start-tour"
+        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#152033] hover:bg-[#1c2b44] text-slate-200 border border-[#1c2638] state-trans cursor-pointer"
+        title="Start Guided Walkthrough">
+        <svg class="w-3.5 h-3.5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Walkthrough
+      </button>
+
+      <!-- Segmented Tab Switcher -->
+      <div class="flex items-center p-0.5 rounded-lg bg-[#070a10] border border-[#1c2638] text-xs font-medium">
+        <button id="tab-matrix"
+          class="px-3 py-1 rounded-md bg-sky-600 text-white font-semibold state-trans cursor-pointer shadow-sm">
+          Matrix Lab
+        </button>
+        <button id="tab-deepdive"
+          class="px-3 py-1 rounded-md text-slate-400 hover:text-slate-200 state-trans cursor-pointer">
+          BDH Deep Dive
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 w-full max-w-[1680px] mx-auto p-4 lg:p-6">
+    <!-- VIEW 1: Main Synapse Matrix Simulation -->
+    <div id="view-matrix" class="w-full grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+      <!-- LEFT RAIL: Parameters & Memory Bank (Col 1 to 4 -> 33%) -->
+      <div class="lg:col-span-4 flex flex-col gap-4">
+        <!-- Parameter Sliders Card -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm">
+          <div class="flex items-center justify-between mb-3 border-b border-[#1c2638] pb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+              <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Synaptic Dynamics
+              </h2>
+            </div>
+            <button id="btn-reset"
+              class="text-[11px] text-slate-400 hover:text-slate-200 hover:bg-[#1c2638] px-2 py-0.5 rounded state-trans cursor-pointer"
+              title="Reset all values to default">
+              Reset Defaults
+            </button>
+          </div>
+
+          <!-- Slider 1: Sparsity k -->
+          <div class="mb-4">
+            <div class="flex justify-between items-baseline mb-1">
+              <div>
+                <label for="slider-k" class="text-xs font-semibold text-slate-200">Sparsity (<span
+                    class="font-mono text-sky-400">k</span>)</label>
+                <p class="text-[10px] text-slate-400">Active neurons per concept (<span class="font-mono">N=64</span>)
+                </p>
+              </div>
+              <span id="val-k"
+                class="font-mono text-xs font-semibold text-sky-300 bg-[#070a10] px-2 py-0.5 rounded border border-[#1c2638]">k
+                = 4 (6.2%)</span>
+            </div>
+            <input id="slider-k" type="range" min="1" max="64" step="1" value="4" class="w-full" />
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+              <span>1 (1.6%)</span>
+              <span class="text-sky-400 font-semibold">k=3–4 (BDH ~5%)</span>
+              <span>64 (Dense)</span>
+            </div>
+          </div>
+
+          <!-- Slider 2: Facts Written -->
+          <div class="mb-4">
+            <div class="flex justify-between items-baseline mb-1">
+              <div>
+                <label for="slider-facts" class="text-xs font-semibold text-slate-200">Stored Facts (<span
+                    class="font-mono text-sky-400">p</span>)</label>
+                <p class="text-[10px] text-slate-400">Active rank-1 outer products in matrix</p>
+              </div>
+              <span id="val-facts"
+                class="font-mono text-xs font-semibold text-sky-300 bg-[#070a10] px-2 py-0.5 rounded border border-[#1c2638]">3
+                / 20</span>
+            </div>
+            <input id="slider-facts" type="range" min="1" max="20" step="1" value="3" class="w-full" />
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+              <span>1 fact</span>
+              <span>10 facts</span>
+              <span>20 facts</span>
+            </div>
+          </div>
+
+          <!-- Slider 3: Decay lambda -->
+          <div class="mb-4">
+            <div class="flex justify-between items-baseline mb-1">
+              <div>
+                <label for="slider-lambda" class="text-xs font-semibold text-slate-200">Fast-Weight Decay (<span
+                    class="font-mono text-sky-400">λ</span>)</label>
+                <p class="text-[10px] text-slate-400">Retention rate: <span class="font-mono text-slate-300">M ← λM +
+                    yxᵀ</span></p>
+              </div>
+              <span id="val-lambda"
+                class="font-mono text-xs font-semibold text-sky-300 bg-[#070a10] px-2 py-0.5 rounded border border-[#1c2638]">λ
+                = 1.00</span>
+            </div>
+            <input id="slider-lambda" type="range" min="0.90" max="1.00" step="0.01" value="1.00" class="w-full" />
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+              <span>0.90 (Rapid)</span>
+              <span>0.95</span>
+              <span>1.00 (Permanent)</span>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="pt-2 border-t border-[#1c2638]">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block mb-1.5">Simulation
+              Presets:</span>
+            <div class="grid grid-cols-3 gap-1.5">
+              <button id="preset-bdh"
+                class="px-2 py-1 rounded text-[10px] font-mono font-medium bg-[#152033] hover:bg-[#1c2b44] border border-[#1c2638] text-sky-300 state-trans cursor-pointer text-center">
+                BDH (k=3)
+              </button>
+              <button id="preset-stress"
+                class="px-2 py-1 rounded text-[10px] font-mono font-medium bg-[#152033] hover:bg-[#1c2b44] border border-[#1c2638] text-amber-300 state-trans cursor-pointer text-center">
+                Overload (p=16)
+              </button>
+              <button id="preset-dense"
+                class="px-2 py-1 rounded text-[10px] font-mono font-medium bg-[#152033] hover:bg-[#1c2b44] border border-[#1c2638] text-rose-300 state-trans cursor-pointer text-center">
+                Dense (k=32)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Association Memory Bank Card -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm flex-1 flex flex-col min-h-85">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+              <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Association Memory Bank
+              </h2>
+            </div>
+            <span id="fact-count-pill"
+              class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#070a10] text-sky-300 border border-[#1c2638]">
+              3 of 20 Active
+            </span>
+          </div>
+
+          <!-- Search & Filter -->
+          <div class="relative mb-2.5">
+            <input id="search-facts" type="text" placeholder="Search stored concepts..."
+              class="w-full bg-[#070a10] border border-[#1c2638] rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-sky-500 outline-none" />
+          </div>
+
+          <!-- Scrollable Fact List -->
+          <div id="fact-list-container" class="space-y-1.5 overflow-y-auto max-h-90 pr-1">
+            <!-- Rendered dynamically by app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER COLUMN: Synaptic Matrix Visualization (Col 5 to 9 -> 42%) -->
+      <div class="lg:col-span-5 flex flex-col items-center gap-4">
+        <div class="w-full bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm flex flex-col items-center">
+
+          <!-- Matrix Header & Dimensions -->
+          <div class="w-full flex items-center justify-between mb-3 border-b border-[#1c2638] pb-2">
+            <div>
+              <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                Synaptic Matrix <span class="font-mono text-sky-400">M ∈ ℝ⁶⁴ˣ⁶⁴</span>
+              </h2>
+              <p class="text-[10px] text-slate-400 mt-0.5">
+                Associative weights: <span class="font-mono">M = ∑ λᵖ yₚ xₚᵀ</span> (4,096 synapses)[cite: 1]
+              </p>
+            </div>
+            <div
+              class="flex items-center gap-1.5 text-[10px] font-mono bg-[#070a10] px-2 py-1 rounded border border-[#1c2638]">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Active Rank-1 Sum</span>
+            </div>
+          </div>
+
+          <!-- Scientific Heatmap Canvas with Coordinate Ticks -->
+          <div class="w-full max-w-120 flex flex-col items-center">
+
+            <!-- Top Axis: Query Key Features x_j -->
+            <div
+              class="w-full flex items-center text-[10px] font-mono text-slate-500 pb-1 px-7 justify-between select-none">
+              <span>x₀</span>
+              <span>x₁₆</span>
+              <span>x₃₂</span>
+              <span>x₄₈</span>
+              <span>x₆₃</span>
+            </div>
+
+            <!-- Main Canvas with Left Axis -->
+            <div class="w-full flex items-center">
+              <!-- Left Axis: Retrieved Value Features y_i -->
+              <div
+                class="flex flex-col justify-between text-[10px] font-mono text-slate-500 pr-1.5 h-105 select-none py-1">
+                <span>y₀</span>
+                <span>y₁₆</span>
+                <span>y₃₂</span>
+                <span>y₄₈</span>
+                <span>y₆₃</span>
+              </div>
+
+              <!-- Canvas Viewport -->
+              <div
+                class="relative flex-1 aspect-square flex items-center justify-center p-1.5 bg-[#070a10] border border-[#1c2638] rounded-lg shadow-inner">
+                <canvas id="synapse-canvas" width="512" height="512" class="w-full h-full cursor-crosshair"></canvas>
+
+                <!-- Synapse Hover Tooltip -->
+                <div id="matrix-tooltip"></div>
+              </div>
+            </div>
+
+            <!-- Scientific Viridis Colormap Scale Bar directly below canvas -->
+            <div class="w-full mt-3 px-7">
+              <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
+                <span>0.00 (Zero)</span>
+                <span class="text-[#3b528b]">Sapphire</span>
+                <span class="text-[#21918c]">Teal</span>
+                <span class="text-[#5ec962]">Emerald</span>
+                <span id="scale-max-label" class="text-[#fde725] font-semibold">Max (Solar)</span>
+              </div>
+              <!-- Standard Perceptually Uniform Viridis Gradient via linear CSS -->
+              <div
+                class="w-full h-2 rounded bg-[linear-gradient(to_right,#0a0e17,#3b528b,#21918c,#5ec962,#fde725)] border border-[#1c2638]">
+              </div>
+            </div>
+          </div>
+
+          <!-- Matrix Telemetry Metrics Strip -->
+          <div class="w-full grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-[#1c2638]">
+            <div class="bg-[#070a10] border border-[#1c2638] p-2.5 rounded-lg text-center">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Matrix Fill</span>
+              <span id="stat-fill" class="font-mono text-sm font-bold text-sky-400">0.0%</span>
+              <span class="text-[9px] text-slate-500 block">non-zero synapses</span>
+            </div>
+            <div class="bg-[#070a10] border border-[#1c2638] p-2.5 rounded-lg text-center">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Frobenius Norm</span>
+              <span id="stat-frob" class="font-mono text-sm font-bold text-teal-300">0.000</span>
+              <span class="text-[9px] text-slate-500 block">||M||_F energy</span>
+            </div>
+            <div class="bg-[#070a10] border border-[#1c2638] p-2.5 rounded-lg text-center">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider block">Max Synapse</span>
+              <span id="stat-max" class="font-mono text-sm font-bold text-amber-300">0.000</span>
+              <span class="text-[9px] text-slate-500 block">max connection</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mathematical Insight Card Below Matrix -->
+        <div
+          class="w-full p-3 rounded-xl bg-[#101726] border border-[#1c2638] text-xs text-slate-400 flex items-start gap-2.5 shadow-sm">
+          <svg class="w-4 h-4 text-sky-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="leading-relaxed">
+            <span class="font-semibold text-slate-200">Linear Hebbian Dynamics:</span> Outer product <span
+              class="font-mono text-sky-300">y xᵀ</span> binds key neurons to value neurons without gradient
+            backpropagation[cite: 1]. Sparsity ensures concept vectors have orthogonal overlap, eliminating catastrophic
+            crosstalk[cite: 1].
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT RAIL: Recall Bench & Telemetry Diagnostics (Col 10 to 12 -> 25%) -->
+      <div class="lg:col-span-3 flex flex-col gap-4">
+        <!-- Query Selector Card -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm">
+          <div class="flex items-center gap-2 mb-2 border-b border-[#1c2638] pb-2">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+            <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
+              Associative Query Bench
+            </h2>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">
+            Multiplication <span class="font-mono text-sky-300">ŷ = M · x</span> reconstructs the value vector from
+            associative memory[cite: 1].
+          </p>
+
+          <div class="space-y-3">
+            <div>
+              <label for="query-select" class="block text-xs font-medium text-slate-300 mb-1">
+                Query Key Concept:
+              </label>
+              <select id="query-select"
+                class="w-full bg-[#070a10] border border-[#1c2638] rounded-lg px-2.5 py-2 text-xs text-slate-200 focus:border-sky-500 outline-none font-medium cursor-pointer">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <button id="btn-recall"
+              class="w-full py-2.5 px-4 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-2 state-trans cursor-pointer">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Execute Recall (M · x)
+            </button>
+          </div>
+        </div>
+
+        <!-- Recall Telemetry Result Card -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Recall Diagnostic</span>
+            <div id="result-status-badge">
+              <!-- Status badge dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Retrieved vs Ground Truth Comparison Box -->
+          <div class="space-y-2 bg-[#070a10] p-3 rounded-lg border border-[#1c2638]">
+            <div>
+              <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Retrieved Concept (ŷ):
+              </div>
+              <div id="result-retrieved" class="text-base font-bold text-white truncate">Paris</div>
+            </div>
+            <div class="border-t border-[#1c2638] pt-2">
+              <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Ground Truth Target (y):
+              </div>
+              <div id="result-groundtruth" class="text-xs font-semibold text-slate-300 truncate">France</div>
+            </div>
+          </div>
+
+          <!-- Alignment Meter & Cosine Score -->
+          <div>
+            <div class="flex justify-between items-baseline mb-1">
+              <span class="text-xs text-slate-400">Cosine Alignment:</span>
+              <span id="result-score" class="font-mono text-xs font-semibold text-sky-300">cos(ŷ, y) = 1.0000</span>
+            </div>
+            <div class="w-full bg-[#070a10] h-2 rounded-full overflow-hidden border border-[#1c2638]">
+              <div id="result-conf-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                style="width: 100%"></div>
+            </div>
+          </div>
+
+          <!-- Top-5 Candidate Ranking -->
+          <div class="border-t border-[#1c2638] pt-3">
+            <div class="text-xs font-semibold text-slate-300 mb-2">
+              Candidate Activation Spectrum:
+            </div>
+            <div id="candidates-chart" class="space-y-1.5">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Memory Footprint & KV-Cache Comparison Card -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-4 shadow-sm flex flex-col gap-3">
+          <div class="flex items-center justify-between border-b border-[#1c2638] pb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h2 class="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                Memory Footprint Scaling
+              </h2>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#070a10] text-amber-300 border border-[#1c2638]">
+              O(d²) vs O(T·d)[cite: 1]
+            </span>
+          </div>
+
+          <p class="text-[11px] text-slate-400">
+            Drag context length <span class="font-mono text-amber-300">T</span> to simulate the Transformer KV-cache
+            memory surge vs. fixed BDH synapses[cite: 1].
+          </p>
+
+          <!-- Context Length T Simulation Slider -->
+          <div class="mb-1">
+            <div class="flex justify-between items-baseline mb-1">
+              <label for="slider-context" class="text-xs font-semibold text-slate-200">Context Length (<span
+                  class="font-mono text-amber-400">T</span>)</label>
+              <span id="val-context"
+                class="font-mono text-xs font-semibold text-amber-300 bg-[#070a10] px-2 py-0.5 rounded border border-[#1c2638]">T
+                = 1,000 tokens</span>
+            </div>
+            <input id="slider-context" type="range" min="10" max="10000" step="50" value="1000" class="w-full" />
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+              <span>10</span>
+              <span>2,500</span>
+              <span>5,000</span>
+              <span>10,000</span>
+            </div>
+          </div>
+
+          <!-- Memory Consumption Comparison Display -->
+          <div class="space-y-2 pt-2 border-t border-[#1c2638]">
+            <!-- BDH Fixed Footprint -->
+            <div class="bg-[#070a10] p-2.5 rounded-lg border border-[#1c2638]">
+              <div class="flex justify-between items-center mb-1 text-xs">
+                <span class="font-semibold text-sky-300 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                  BDH Synaptic State:
+                </span>
+                <span id="meter-bdh-bytes" class="font-mono font-bold text-sky-400">32.77 KB</span>
+              </div>
+              <div class="w-full bg-[#101726] h-1.5 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500 rounded-full w-[8%]"></div>
+              </div>
+              <span class="text-[9px] text-slate-500 font-mono block mt-1">
+                Fixed invariant: 64×64 Float64 = 4,096 synapses (Constant O(d²))[cite: 1]
+              </span>
+            </div>
+
+            <!-- Transformer KV-Cache Footprint -->
+            <div class="bg-[#070a10] p-2.5 rounded-lg border border-[#1c2638]">
+              <div class="flex justify-between items-center mb-1 text-xs">
+                <span class="font-semibold text-rose-300 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  Transformer KV-Cache:
+                </span>
+                <span id="meter-kv-bytes" class="font-mono font-bold text-rose-400">512.00 KB</span>
+              </div>
+              <div class="w-full bg-[#101726] h-1.5 rounded-full overflow-hidden">
+                <div id="meter-kv-bar" class="h-full bg-rose-500 rounded-full transition-all duration-150"
+                  style="width: 15%"></div>
+              </div>
+              <span id="meter-kv-label" class="text-[9px] text-slate-500 font-mono block mt-1">
+                Linear accumulation: 2 × T × d × 4 bytes (Surges O(T·d))[cite: 1]
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: BDH Deep Dive Tab (Architectural & Mathematical Whitepaper) -->
+    <div id="view-deepdive" class="hidden w-full max-w-5xl mx-auto py-4 space-y-6">
+      <div class="text-center max-w-2xl mx-auto mb-6">
+        <span
+          class="text-[10px] uppercase font-mono px-2.5 py-1 rounded bg-sky-950/60 text-sky-300 border border-sky-800/40 font-semibold tracking-wider">
+          Theoretical Foundations
+        </span>
+        <h2 class="text-xl font-bold text-white tracking-tight mt-2">Dragon Hatchling (BDH) Architecture</h2>
+        <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+          Understanding why associative synaptic fast weights rely on sparse non-negative representations to eliminate
+          catastrophic forgetting in recurrent linear attention[cite: 1].
+        </p>
+      </div>
+
+      <!-- 3 Side-by-Side Deep Dive Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Card 1: Mathematical Equivalence -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="w-6 h-6 rounded bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-mono font-bold text-xs">
+                Σ
+              </span>
+              <h3 class="text-sm font-bold text-white">Mathematical Equivalence</h3>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+              BDH replaces standard softmax-quadratic self-attention with linear Hebbian recurrence using rank-1
+              updates[cite: 1]:
+            </p>
+
+            <!-- LaTeX Equation Comparison -->
+            <div class="bg-[#070a10] border border-[#1c2638] rounded-lg p-3 space-y-3 mb-3 text-xs font-mono">
+              <div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">BDH Synaptic Recurrence:</div>
+                <div id="katex-bdh-eq" class="text-sky-300 overflow-x-auto py-1"></div>
+              </div>
+              <div class="border-t border-[#1c2638] pt-2">
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Synapse Lab Write Rule:</div>
+                <div id="katex-synapse-eq" class="text-teal-300 overflow-x-auto py-1"></div>
+              </div>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Both bind key <span class="font-mono text-slate-300">k</span> and value <span
+                class="font-mono text-slate-300">v</span> directly into the synaptic matrix with decay <span
+                class="font-mono text-slate-300">λ</span>[cite: 1].
+            </p>
+          </div>
+
+          <div class="border-t border-[#1c2638] pt-3 mt-4">
+            <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noreferrer"
+              class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300">
+              Read Paper (arXiv:2509.26507) →
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: The ~5% Sparsity Constant -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="w-6 h-6 rounded bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-mono font-bold text-xs">
+                5%
+              </span>
+              <h3 class="text-sm font-bold text-white">The ~5% Sparsity Law</h3>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+              Biological brains and trained BDH runs exhibit roughly <strong>5% active neurons</strong> per token
+              representation[cite: 1]:
+            </p>
+
+            <div class="bg-[#070a10] border border-[#1c2638] rounded-lg p-3 text-center mb-3">
+              <span class="font-mono text-xl font-bold text-sky-400">k ≈ 3 of 64</span>
+              <span class="text-[11px] text-slate-400 block mt-0.5">Exact ratio = 4.68% active neurons</span>
+            </div>
+
+            <div class="text-xs text-slate-400 space-y-2 leading-relaxed">
+              <p>
+                <strong>Collision probability:</strong> The chance of two random concepts colliding on active indices is
+                <span class="font-mono text-slate-300">1 - (1 - k/N)ᵏ</span>.
+              </p>
+              <p>
+                At <span class="font-mono text-emerald-400">k = 3</span>, collision risk is under
+                <strong>14%</strong>[cite: 1]. At <span class="font-mono text-rose-400">k = 32</span> (dense), collision
+                is <strong>100%</strong>, resulting in instant catastrophic crosstalk![cite: 1]
+              </p>
+            </div>
+          </div>
+
+          <div class="border-t border-[#1c2638] pt-3 mt-4">
+            <button id="btn-set-k-3"
+              class="w-full py-2 px-3 rounded-lg bg-sky-600/20 hover:bg-sky-600/30 border border-sky-500/30 text-sky-300 text-xs font-semibold state-trans cursor-pointer text-center">
+              Apply BDH Baseline (k = 3) →
+            </button>
+          </div>
+        </div>
+
+        <!-- Card 3: Scope & Real-World Context -->
+        <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span
+                class="w-6 h-6 rounded bg-sky-600/20 text-sky-400 border border-sky-500/30 flex items-center justify-center font-mono font-bold text-xs">
+                ✓
+              </span>
+              <h3 class="text-sm font-bold text-white">Architectural Scope</h3>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed mb-3">
+              Rigorous mapping between this linear algebra simulator and full language models:
+            </p>
+
+            <div class="space-y-2 text-xs">
+              <div class="flex items-start gap-2 text-slate-300 bg-[#070a10] p-2 rounded-lg border border-[#1c2638]">
+                <span class="text-sky-400 font-mono text-xs font-bold">1</span>
+                <span><strong>Deterministic Random Vectors:</strong> Demonstrates pure linear algebra without neural
+                  backprop[cite: 1].</span>
+              </div>
+              <div class="flex items-start gap-2 text-slate-300 bg-[#070a10] p-2 rounded-lg border border-[#1c2638]">
+                <span class="text-sky-400 font-mono text-xs font-bold">2</span>
+                <span><strong>Hebbian Recurrence:</strong> Exact rank-1 matrix addition identical to linear
+                  attention[cite: 1].</span>
+              </div>
+              <div class="flex items-start gap-2 text-slate-300 bg-[#070a10] p-2 rounded-lg border border-[#1c2638]">
+                <span class="text-sky-400 font-mono text-xs font-bold">3</span>
+                <span><strong>Zero Hallucinations:</strong> Pure vector space geometry and cosine similarity
+                  metrics[cite: 1].</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-[#1c2638] pt-3 mt-4 text-[11px] text-slate-500 font-mono">
+            In-browser linear algebra · Float64 precision[cite: 1]
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Empirical PyTorch Benchmarks (Fed by python/data/benchmarks.json) -->
+      <div class="bg-[#101726] border border-[#1c2638] rounded-xl p-5 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1c2638] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">
+              Offline PyTorch MQAR Benchmark Results
+            </h3>
+          </div>
+          <span
+            class="text-[10px] font-mono px-2 py-0.5 rounded bg-[#070a10] text-emerald-400 border border-emerald-500/30">
+            Source: python/data/benchmarks.json
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Precomputed Multi-Query Associative Recall (MQAR) sweep across <span class="font-mono text-sky-300">d =
+            64</span>, comparing <strong>BDH Sparse Hebbian Plasticity (k = 3)</strong> against <strong>Dense Linear
+            Attention</strong> and <strong>Softmax KV-Cache</strong>.
+        </p>
+
+        <!-- Dynamic Benchmark Comparison Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-[#070a10] text-slate-400 border-b border-[#1c2638]">
+              <tr>
+                <th class="p-2">Stored Facts (P)</th>
+                <th class="p-2">Softmax KV Acc</th>
+                <th class="p-2">Dense Linear Acc</th>
+                <th class="p-2 text-sky-400">BDH (k = 3) Acc</th>
+                <th class="p-2 text-teal-300">BDH Cosine Fidelity</th>
+              </tr>
+            </thead>
+            <tbody id="benchmark-table-body" class="divide-y divide-[#1c2638] text-slate-300">
+              <!-- Dynamically populated from python/data/benchmarks.json -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Memory Footprint Scaling Table -->
+        <div class="border-t border-[#1c2638] pt-3">
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-2">
+            VRAM Footprint Scaling Across Context Length (T)
+          </h4>
+          <div id="benchmark-memory-strip" class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
+            <!-- Dynamically populated from python/data/benchmarks.json -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Architecture Specifications & Research Details Modal -->
+  <div id="specs-modal-container"
+    class="hidden [&:not(.hidden)]:flex fixed inset-0 z-50 items-center justify-center tour-overlay p-4 overflow-y-auto">
+    <div
+      class="bg-[#101726] border border-sky-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative shadow-sky-950/50 my-8">
+      <!-- Close button -->
+      <button id="specs-close-btn"
+        class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-[#1c2638] state-trans cursor-pointer"
+        title="Close Specifications">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-2 mb-3">
+        <span
+          class="px-2.5 py-0.5 rounded text-[10px] uppercase font-mono font-bold tracking-wider bg-sky-950/70 text-sky-300 border border-sky-800/50">
+          Formal Specifications
+        </span>
+        <span class="text-xs font-mono text-slate-500">arXiv:2509.26507</span>
+      </div>
+
+      <h3 class="text-lg font-bold text-white mb-1 font-['Inter']">
+        Dragon Hatchling (BDH) Architectural Mechanics
+      </h3>
+      <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+        The Baby Dragon Hatchling (BDH) architecture demonstrates how sparse non-negative neural activations convert
+        linear recurrence into an associative memory store immune to catastrophic interference[cite: 1].
+      </p>
+
+      <div class="space-y-4 text-xs text-slate-300 max-h-[60vh] overflow-y-auto pr-1">
+        <!-- Section 1: Mathematical Foundations -->
+        <div class="bg-[#070a10] border border-[#1c2638] rounded-xl p-4">
+          <div
+            class="text-[11px] font-bold uppercase tracking-wider text-sky-400 font-mono mb-2 flex items-center gap-1.5">
+            <span>01</span> Mathematical Formulation
+          </div>
+          <p class="text-slate-300 mb-2 leading-relaxed">
+            Every memory write executes a rank-1 outer product update without gradient backpropagation[cite: 1]:
+          </p>
+          <div
+            class="bg-[#0a0e17] border border-[#1c2638] rounded-lg p-3 font-mono text-sky-300 text-[11px] space-y-1.5">
+            <div><strong class="text-slate-400">Synaptic Plasticity:</strong> Mₜ = λ · Mₜ₋₁ + yₜ xₜᵀ</div>
+            <div><strong class="text-slate-400">Associative Retrieval:</strong> ŷ = M · x_query</div>
+            <div><strong class="text-slate-400">Sparse Projections:</strong> x = TopK-ReLU(W_K · e), y = TopK-ReLU(W_V ·
+              e)</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Why ~5% Sparsity Eliminates Crosstalk -->
+        <div class="bg-[#070a10] border border-[#1c2638] rounded-xl p-4">
+          <div
+            class="text-[11px] font-bold uppercase tracking-wider text-teal-400 font-mono mb-2 flex items-center gap-1.5">
+            <span>02</span> Interference Immunity via Orthogonality
+          </div>
+          <p class="text-slate-300 mb-2 leading-relaxed">
+            When querying associative memory for concept <span class="font-mono text-sky-300">x_a</span>, the retrieved
+            vector expands to:
+          </p>
+          <div class="bg-[#0a0e17] border border-[#1c2638] rounded-lg p-2.5 font-mono text-slate-300 text-[11px] mb-2">
+            ŷ_a = y_a (x_aᵀ x_a) + ∑_{i ≠ a} y_i (x_iᵀ x_a)
+          </div>
+          <p class="text-slate-400 leading-relaxed">
+            In standard dense vectors, the crosstalk summation <span class="font-mono text-slate-300">∑ y_i (x_iᵀ x_a) =
+              O(p)</span> quickly drowns out the target signal. With non-negative <span
+              class="font-mono text-emerald-400">Top-k ReLU (k ≈ 3–4, ~5%)</span>, the collision probability between any
+            two random vectors drops below 14%, ensuring <span class="font-mono text-emerald-300">x_iᵀ x_a = 0</span>
+            almost surely![cite: 1]
+          </p>
+        </div>
+
+        <!-- Section 3: Parameters & Biological Correlates -->
+        <div class="bg-[#070a10] border border-[#1c2638] rounded-xl p-4">
+          <div
+            class="text-[11px] font-bold uppercase tracking-wider text-amber-400 font-mono mb-2 flex items-center gap-1.5">
+            <span>03</span> Laboratory Simulation Specifications
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="p-2 rounded bg-[#0a0e17] border border-[#1c2638]">
+              <span class="text-slate-500 block text-[10px]">Neuron Layer Size (N)</span>
+              <span class="font-mono font-bold text-slate-200">64 Neurons</span>
+            </div>
+            <div class="p-2 rounded bg-[#0a0e17] border border-[#1c2638]">
+              <span class="text-slate-500 block text-[10px]">Synaptic Matrix Dimensions</span>
+              <span class="font-mono font-bold text-slate-200">64 × 64 (4,096 Synapses)</span>
+            </div>
+            <div class="p-2 rounded bg-[#0a0e17] border border-[#1c2638]">
+              <span class="text-slate-500 block text-[10px]">Default Sparsity Target</span>
+              <span class="font-mono font-bold text-sky-400">k = 4 (6.25% Active)</span>
+            </div>
+            <div class="p-2 rounded bg-[#0a0e17] border border-[#1c2638]">
+              <span class="text-slate-500 block text-[10px]">Precision Standard</span>
+              <span class="font-mono font-bold text-slate-200">IEEE 754 64-bit Float</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between border-t border-[#1c2638] pt-4 mt-4">
+        <a href="https://arxiv.org/abs/2509.26507" target="_blank" rel="noreferrer"
+          class="text-xs font-semibold text-sky-400 hover:text-sky-300 inline-flex items-center gap-1">
+          Full BDH Paper on arXiv →
+        </a>
+        <button id="specs-close-bottom-btn"
+          class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold state-trans cursor-pointer">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guided Tour Floating Draggable HUD (Non-blocking & Freely Repositionable) -->
+  <div id="tour-overlay-container"
+    class="hidden [&:not(.hidden)]:block fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-2rem)] sm:w-105 pointer-events-none">
+    <div id="tour-card"
+      class="bg-[#101726]/95 border-2 border-sky-400/60 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_25px_rgba(14,165,233,0.25)] pointer-events-auto backdrop-blur-md transition-shadow">
+      <!-- Draggable Grab Handle -->
+      <div id="tour-drag-handle"
+        class="flex items-center justify-between pb-2 mb-3 border-b border-[#1c2638] cursor-grab active:cursor-grabbing select-none text-slate-400 hover:text-slate-200 group">
+        <div class="flex items-center gap-1.5 text-[10px] font-mono tracking-wider font-semibold">
+          <svg class="w-3.5 h-3.5 text-sky-400 group-hover:scale-110 transition-transform" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+          </svg>
+          <span class="text-sky-300">DRAG HUD ANYWHERE</span>
+        </div>
+        <span class="text-slate-500 group-hover:text-sky-400 font-mono text-xs">⠿</span>
+      </div>
+
+      <!-- Close button -->
+      <button id="tour-skip-btn"
+        class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-[#1c2638] state-trans cursor-pointer"
+        title="Dismiss Walkthrough">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-2 mb-2.5">
+        <span
+          class="px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold tracking-wider bg-sky-950/80 text-sky-300 border border-sky-700/60">
+          Interactive Walkthrough
+        </span>
+        <div id="tour-step-dots" class="flex items-center gap-1.5 ml-auto mr-7">
+          <!-- Dots dynamically populated -->
+        </div>
+      </div>
+
+      <h3 id="tour-title" class="text-sm font-bold text-white mb-1.5">Step 1: Clean Associative Memory</h3>
+      <div id="tour-desc" class="text-xs text-slate-300 leading-relaxed mb-4 space-y-1.5">
+        <!-- Text dynamically loaded -->
+      </div>
+
+      <div class="flex items-center justify-between border-t border-[#1c2638] pt-3">
+        <button id="tour-skip-bottom-btn"
+          class="text-xs text-slate-400 hover:text-slate-200 state-trans cursor-pointer">
+          Skip Walkthrough
+        </button>
+        <button id="tour-next-btn"
+          class="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold shadow-sm state-trans cursor-pointer flex items-center gap-1.5">
+          Next Step →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script loading -->
+  <script type="module" src="/src/app.js"></script>
+</body>
+
+</html>

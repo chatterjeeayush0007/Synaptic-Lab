@@ -1,0 +1,296 @@
+{
+  "metadata": {
+    "dimension": 64,
+    "sparsity_k": 3,
+    "device": "cpu",
+    "hopfield_capacity_bound": 8.96,
+    "description": "Multi-Query Associative Recall (MQAR) benchmark curves"
+  },
+  "capacity_vs_facts": [
+    {
+      "num_facts": 2,
+      "bdh_sparse": {
+        "cosine_mean": 1.0,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 1.0,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.7732,
+        "accuracy_mean": 1.0
+      }
+    },
+    {
+      "num_facts": 4,
+      "bdh_sparse": {
+        "cosine_mean": 0.9627,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9627,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.5857,
+        "accuracy_mean": 0.6667
+      }
+    },
+    {
+      "num_facts": 6,
+      "bdh_sparse": {
+        "cosine_mean": 0.9751,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9751,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.5099,
+        "accuracy_mean": 0.6111
+      }
+    },
+    {
+      "num_facts": 8,
+      "bdh_sparse": {
+        "cosine_mean": 0.9517,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9517,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.4431,
+        "accuracy_mean": 0.3333
+      }
+    },
+    {
+      "num_facts": 10,
+      "bdh_sparse": {
+        "cosine_mean": 0.9544,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9544,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3974,
+        "accuracy_mean": 0.1333
+      }
+    },
+    {
+      "num_facts": 12,
+      "bdh_sparse": {
+        "cosine_mean": 0.9444,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9444,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3823,
+        "accuracy_mean": 0.1667
+      }
+    },
+    {
+      "num_facts": 14,
+      "bdh_sparse": {
+        "cosine_mean": 0.9371,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9371,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3614,
+        "accuracy_mean": 0.2143
+      }
+    },
+    {
+      "num_facts": 16,
+      "bdh_sparse": {
+        "cosine_mean": 0.9238,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9238,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3459,
+        "accuracy_mean": 0.1042
+      }
+    },
+    {
+      "num_facts": 18,
+      "bdh_sparse": {
+        "cosine_mean": 0.9067,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.9067,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3324,
+        "accuracy_mean": 0.0926
+      }
+    },
+    {
+      "num_facts": 20,
+      "bdh_sparse": {
+        "cosine_mean": 0.8985,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.8985,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3219,
+        "accuracy_mean": 0.0833
+      }
+    },
+    {
+      "num_facts": 24,
+      "bdh_sparse": {
+        "cosine_mean": 0.8725,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.8725,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.3093,
+        "accuracy_mean": 0.0417
+      }
+    },
+    {
+      "num_facts": 28,
+      "bdh_sparse": {
+        "cosine_mean": 0.8517,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.8517,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.2951,
+        "accuracy_mean": 0.0357
+      }
+    },
+    {
+      "num_facts": 32,
+      "bdh_sparse": {
+        "cosine_mean": 0.8418,
+        "accuracy_mean": 1.0
+      },
+      "dense_linear": {
+        "cosine_mean": 0.8418,
+        "accuracy_mean": 1.0
+      },
+      "softmax_kv": {
+        "cosine_mean": 0.2889,
+        "accuracy_mean": 0.0416
+      }
+    }
+  ],
+  "memory_vs_context": [
+    {
+      "context_tokens": 10,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 5120,
+      "kv_cache_kb": 5.0,
+      "ratio_kv_to_bdh": 0.31
+    },
+    {
+      "context_tokens": 25,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 12800,
+      "kv_cache_kb": 12.5,
+      "ratio_kv_to_bdh": 0.78
+    },
+    {
+      "context_tokens": 50,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 25600,
+      "kv_cache_kb": 25.0,
+      "ratio_kv_to_bdh": 1.56
+    },
+    {
+      "context_tokens": 100,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 51200,
+      "kv_cache_kb": 50.0,
+      "ratio_kv_to_bdh": 3.12
+    },
+    {
+      "context_tokens": 200,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 102400,
+      "kv_cache_kb": 100.0,
+      "ratio_kv_to_bdh": 6.25
+    },
+    {
+      "context_tokens": 350,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 179200,
+      "kv_cache_kb": 175.0,
+      "ratio_kv_to_bdh": 10.94
+    },
+    {
+      "context_tokens": 500,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 256000,
+      "kv_cache_kb": 250.0,
+      "ratio_kv_to_bdh": 15.62
+    },
+    {
+      "context_tokens": 1000,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 512000,
+      "kv_cache_kb": 500.0,
+      "ratio_kv_to_bdh": 31.25
+    },
+    {
+      "context_tokens": 2500,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 1280000,
+      "kv_cache_kb": 1250.0,
+      "ratio_kv_to_bdh": 78.12
+    },
+    {
+      "context_tokens": 5000,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 2560000,
+      "kv_cache_kb": 2500.0,
+      "ratio_kv_to_bdh": 156.25
+    },
+    {
+      "context_tokens": 10000,
+      "bdh_bytes": 16384,
+      "bdh_kb": 16.0,
+      "kv_cache_bytes": 5120000,
+      "kv_cache_kb": 5000.0,
+      "ratio_kv_to_bdh": 312.5
+    }
+  ]
+}
