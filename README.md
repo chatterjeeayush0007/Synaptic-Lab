@@ -10,7 +10,7 @@ Memory_KV = 2 · L · T · d · sizeof(dtype) = O(T · d)
 
 At long sequences (T ≥ 32k), GPU VRAM exhaustion triggers catastrophic Out-Of-Memory (OOM) failures or requires heavy distributed KV-compression schemes.
 
-The Core Scientific Claim:
+The Core Scientific Claim
 
 The Baby Dragon Hatchling (BDH) architecture demonstrates that recurrent, local Hebbian fast weights (M ∈ R^(d × d)) achieve associative sequence memory in strictly constant space O(d²) and constant decoding step complexity O(d²), provided neural activations are constrained to non-negative sparse subspaces (≈ 5% biological active units) to prevent crosstalk collapse.
 
