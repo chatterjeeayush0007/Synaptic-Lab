@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+dist-ssr/
+*.local
+
+# Python environment & artifacts
+.venv/
+env/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Editor & OS settings
+.vscode/*
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db

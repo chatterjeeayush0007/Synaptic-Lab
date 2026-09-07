@@ -1,0 +1,6 @@
+{
+  "name": "Synapse Lab",
+  "description": "Interactive exploration of Dragon Hatchling (BDH) synaptic memory via Hebbian fast weights and sparse activations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
