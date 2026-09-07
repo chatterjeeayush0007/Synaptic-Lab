@@ -8,227 +8,230 @@ Standard autoregressive Transformers suffer from an inference-time memory bottle
 
 Memory_KV = 2 · L · T · d · sizeof(dtype) = O(T · d)
 
-
-At long sequences (T ≥ 32k), GPU VRAM exhaustion triggers catastrophic Out-Of-Memory (OOM) failures or requires heavy distributed KV-compression schemes.
+At long sequences (T ≥ 32k), GPU VRAM exhaustion can trigger Out-Of-Memory (OOM) failures or require heavy distributed KV-cache compression.
 
 The Core Scientific Claim
 
-The Baby Dragon Hatchling (BDH) architecture demonstrates that recurrent, local Hebbian fast weights (M ∈ R^(d × d)) achieve associative sequence memory in strictly constant space O(d²) and constant decoding step complexity O(d²), provided neural activations are constrained to non-negative sparse subspaces (≈ 5% biological active units) to prevent crosstalk collapse.
+The Baby Dragon Hatchling (BDH) architecture demonstrates that recurrent, local Hebbian fast weights (M ∈ R^(d × d)) can provide associative sequence memory using a fixed-size state of O(d²).
+
+The decoding step also operates at O(d²) complexity rather than growing with sequence length.
+
+The approach relies on constraining neural activations to non-negative sparse subspaces, with approximately 5% of units active, to reduce associative crosstalk.
 
 What Synapse Lab Provides
 
-Synapse Lab provides a dual-layer, verified research environment:
+Synapse Lab provides two connected research components:
 
-Interactive Client Visualizer — A 60 FPS in-browser simulation executing real-time Float64 Hebbian updates with a draggable telemetry HUD, dynamic crosstalk probe verification, and interactive parameter exploration.
+Interactive Client Visualizer: A 60 FPS browser-based simulation using Float64 Hebbian updates, interactive parameter controls, telemetry, and crosstalk visualization.
 
-PyTorch Research Harness — An offline, reproducible benchmarking suite (python/) providing reference implementations of BDH, Softmax KV-cache, and Dense Linear Attention models, evaluating Multi-Query Associative Recall (MQAR) and capacity scaling.
+PyTorch Research Harness: An offline benchmarking suite providing reference implementations of BDH, Softmax KV-cache, and Dense Linear Attention, with experiments focused on Multi-Query Associative Recall (MQAR) and memory capacity.
 
 2. Mathematical Formalism
 2.1 The Hebbian Outer-Product Update
 
-Instead of appending rows to a buffer, memory writes execute a local rank-1 outer-product update directly onto the fast-weight matrix:
+Instead of continuously appending token representations to a growing memory buffer, the model writes information directly into a fixed-size fast-weight matrix.
+
+The update rule is:
 
 Mₜ = λMₜ₋₁ + η(yₜxₜᵀ)
-
 
 Where:
 
 xₜ ∈ Rᵈ — Key concept representation vector.
 yₜ ∈ Rᵈ — Value concept representation vector.
-λ ∈ (0, 1] — Synaptic decay factor determining retention horizon.
-η > 0 — Plasticity rate coefficient (set to 1.0).
+λ ∈ (0, 1] — Synaptic decay factor controlling the retention horizon.
+η > 0 — Plasticity rate coefficient, set to 1.0 in the reference implementation.
+Mₜ — Fast-weight memory state at timestep t.
+
+Each association is therefore written through a rank-1 outer-product update, allowing the memory state to remain fixed at d × d.
+
 2.2 Subspace Isolation via Non-Negative Sparsity
 
-When retrieving an association using query cue q = xₐ, the linear readout expands into a target signal and a superposition of crosstalk:
+When retrieving an association using the query cue q = xₐ, the linear readout becomes:
 
-ŷₐ = Mxₐ
-   = yₐ(xₐᵀxₐ) + Σⱼ≠ₐ yⱼ(xⱼᵀxₐ)
+ŷₐ = Mxₐ = yₐ(xₐᵀxₐ) + Σⱼ≠ₐ yⱼ(xⱼᵀxₐ)
+
+The first term represents the desired association, while the second term represents crosstalk from other stored associations.
 
 The Dense Failure Mode
 
-In standard dense linear attention (100% activation density), the cumulative interference
+With standard dense linear attention, approximately 100% of activation coordinates can participate in every representation.
+
+As more associations are stored, accumulated interference can overwhelm the desired signal:
 
 Σⱼ≠ₐ yⱼ(xⱼᵀxₐ) = O(p)
 
-
-rapidly overpowers the target vector yₐ, causing total crosstalk collapse.
+This eventually results in crosstalk collapse, where the retrieved representation no longer reliably identifies the requested association.
 
 The Non-Negative Top-K Solution
 
-BDH filters pre-synaptic activations through a non-negative thresholding function:
+BDH addresses this problem by applying TopK-ReLU to the projected representations:
 
 x = TopK-ReLU(Wₖe, k) / ‖TopK-ReLU(Wₖe, k)‖₂
 
 y = TopK-ReLU(Wᵥe, k) / ‖TopK-ReLU(Wᵥe, k)‖₂
 
+For d = 64, choosing k ≈ 3–4 corresponds to approximately 4.7%–6.2% active coordinates.
 
-For d = 64, setting k ≈ 3–4 (≈ 4.7%–6.2% active coordinates) minimizes coordinate collision probabilities:
+The associated coordinate collision probability is:
 
 P(collision) = 1 − (1 − k/d)ᵏ < 0.14
 
+This reduces the probability that two independent sparse representations share active coordinates.
 
-This ensures:
-
-xⱼᵀxₐ ≈ 0
-
-
-for almost all j ≠ a, keeping synaptic pathways approximately orthogonal and preserving high-fidelity retrieval.
+Consequently, xⱼᵀxₐ ≈ 0 for most unrelated associations, reducing interference and improving retrieval fidelity.
 
 3. Comparative Architecture Taxonomy
 Architectural Dimension	Transformer (Softmax KV Cache)	Dense Linear Attention	BDH Synaptic Plasticity
-State Memory Footprint	O(T · d) — Surges linearly	O(d²) — Fixed constant	O(d²) — Fixed constant: 32.77 KB at d = 64
-Step FLOP Complexity	O(T · d)	O(d²)	O(d²)
-Activation Geometry	Unconstrained dense softmax	Dense unthresholded linear	Non-negative Top-K (~5% active units)
-Failure Mode	Physical VRAM OOM crash	Instant crosstalk wash-out	Hopfield bound saturation (P > 0.14d)
-Long-Context Behavior	Exact retrieval, memory wall	Signal collapse	Decaying working memory via λ < 1.0
+State Memory Footprint	O(T · d), grows with context	O(d²), fixed	O(d²), fixed
+Step Complexity	O(T · d)	O(d²)	O(d²)
+Activation Geometry	Dense softmax	Dense linear	Non-negative Top-K
+Typical Activation Density	Dense	100%	~5%
+Primary Failure Mode	VRAM / OOM	Crosstalk wash-out	Capacity saturation
+Long-Context Behavior	Exact retrieval until memory limit	Signal degradation	Decaying working memory
+State Size at d = 64	Grows with T	Fixed	32.77 KB
 4. Empirical Validation & Discovery Log
-Retrieval Accuracy vs. Stored Facts
 
-Configuration: d = 64, P ∈ [2, 32]
+The research harness evaluates associative retrieval capacity under different activation densities and memory configurations.
 
-100% ─────────────────────────┐
-     │ █   █   █              │  ■ Softmax KV-Cache (100% Exact)
- 80% │   █   █   ▲   ▲        │  ▲ BDH Sparse Hebbian (k = 3, ~5%)
- 60% │             ▲   ▲      │  ● Dense Linear Attention (k = 64)
- 40% │                   ▲    │
- 20% │ ●   ●                  │
-  0% └───┴───┴───┴───┴───┴────┘
-     2   4   8  12  16  24  32
+4.1 Sparse Hebbian Retrieval
 
-Key Discoveries
-1. The ~5% Biological Sparsity Invariant
+The offline PyTorch MQAR experiments indicate that, for d = 64, using k = 3 maintains greater than 95% retrieval accuracy up to approximately 8 stored associations under the tested conditions.
 
-In offline PyTorch MQAR sweeps across d = 64, setting k = 3 maintains >95% retrieval accuracy up to P ≈ 8 stored items.
+Increasing the number of active coordinates significantly increases the probability of overlap between representations.
 
-Expanding k → 32 (50% density) drops retrieval fidelity to zero under identical sequence conditions.
+For example:
 
-2. The Hopfield Capacity Boundary
+k = 3 → approximately 4.7% density
+k = 4 → approximately 6.2% density
+k = 32 → 50% density
+k = 64 → 100% density
 
-Without synaptic decay (λ = 1.00), a 64 × 64 matrix hits theoretical capacity saturation near:
+Under the tested sequence conditions, increasing the density toward 50% causes retrieval fidelity to collapse because of accumulated crosstalk.
 
-P ≈ 0.14d ≈ 9 items
+4.2 Hopfield Capacity Boundary
 
+Without synaptic decay:
 
-Pushing to P = 16 causes catastrophic memory interference.
+λ = 1.00
 
-3. Decay-Driven Working Memory
+the fast-weight matrix retains every previous association indefinitely.
 
-Applying slight decay (λ = 0.94–0.98) prevents synaptic saturation over infinite contexts, converting the matrix into an adaptive rolling working memory.
+For a 64 × 64 matrix, the observed theoretical capacity boundary is approximately:
+
+P ≈ 0.14d ≈ 9 associations
+
+Beyond this region, interference between stored patterns becomes increasingly significant.
+
+At approximately P = 16, the tested system experiences catastrophic memory interference.
+
+4.3 Decay-Driven Working Memory
+
+Introducing controlled synaptic decay changes the behavior from permanent associative storage to a rolling working-memory mechanism.
+
+The tested range:
+
+λ = 0.94–0.98
+
+provides a compromise between retention and saturation.
+
+A lower decay value causes older associations to disappear more quickly, while a value closer to 1.0 provides longer retention but increases the risk of accumulated interference.
 
 5. System Architecture & Integration
 
-The repository implements a fully coupled research loop where offline PyTorch experiments feed the interactive visualization engine.
+Synapse Lab connects the offline research pipeline with the interactive browser visualizer.
 
-┌─────────────────────────────────────────────────────────────┐
-│                    OFFLINE PYTORCH SUITE                    │
-│                                                             │
-│   python/generate_data.py   ───>   python/data/associations.json
-│   (Sparse vectors & Probes)        (Concept space & overlap pairs)
-│                                                    │
-│   python/benchmark_capacity.py ─>  python/data/benchmarks.json
-│   (MQAR Sweeps & VRAM Scaling)     (Empirical accuracy curves)
-└────────────────────────────────────────────────────┬────────┘
-                                                     │
-                                               Static Bridge
-                                                     │
-┌────────────────────────────────────────────────────▼────────┐
-│                   INTERACTIVE WEB ENGINE                    │
-│                                                             │
-│   src/app.js (Imports associations.json & benchmarks.json)  │
-│   ├─ 60 FPS Heatmap Canvas (Viridis Colormap, Hover Tooltip)│
-│   ├─ Interactive Draggable Telemetry HUD                    │
-│   ├─ Dual-Slider Interference Walkthrough (k & p Sync)      │
-│   └─ BDH Deep Dive (Renders empirical PyTorch MQAR data)    │
-└─────────────────────────────────────────────────────────────┘
+Offline Research Pipeline
 
-Zero-Latency Mathematical Substrate
+The research process begins with python/generate_data.py.
 
-The web visualizer runs Float64 matrix updates client-side to ensure 60 FPS slider scrubbing without HTTP request latency.
+This component:
 
-Direct Artifact Ingestion
+Generates synthetic sparse concept vectors.
+Creates calibrated crosstalk probe pairs.
+Produces the shared association dataset.
 
-src/app.js ingests:
+The generated data is then used by python/benchmark_capacity.py, which:
 
-python/data/associations.json
+Runs MQAR capacity experiments.
+Evaluates different sparsity levels.
+Measures associative retrieval performance.
+Generates capacity and memory-scaling results.
 
+Finally, python/verify_parity.py compares the numerical behavior of the PyTorch implementation with the browser-side simulation.
 
-to load the exact sparse vectors and calibrated crosstalk probes generated by PyTorch.
+Shared Data
 
-Empirical Dashboard
+The research pipeline generates:
 
-The BDH Deep Dive tab renders the precomputed MQAR accuracy and footprint scaling tables directly from:
+python/data/associations.json — Sparse concept vectors and calibrated probe configurations.
+python/data/benchmarks.json — Precomputed capacity, accuracy, and scaling results.
 
-python/data/benchmarks.json
+The browser visualizer loads these artifacts directly, allowing the interactive interface to work with the same data used by the offline experiments.
 
-6. Repository Layout
-Synaptic-Plasticity/
-├── index.html                   # Production visualizer shell & draggable HUD
-│
-├── src/
-│   ├── app.js                   # 60 FPS simulation engine, tour, & data bridge
-│   ├── styles.css               # Viridis colormap, custom controls, dark theme
-│   └── vite-env.d.ts            # TypeScript definitions for Vite
-│
-├── python/                      # Reproducible PyTorch Research Suite
-│   ├── requirements.txt         # Pinned offline scientific dependencies
-│   ├── generate_data.py         # Synthetic sparse concept & crosstalk generator
-│   ├── benchmark_capacity.py    # Multi-Query Associative Recall (MQAR) sweep
-│   ├── verify_parity.py         # Numerical parity test (PyTorch vs. Web engine)
-│   │
-│   ├── models/
-│   │   ├── __init__.py          # Package interface
-│   │   ├── bdh_toy.py           # Canonical BDH TopK-ReLU Hebbian reference
-│   │   └── baselines.py         # Softmax KV-cache & Dense Linear references
-│   │
-│   └── data/
-│       ├── associations.json     # Calibrated concept vectors & probe pairs
-│       └── benchmarks.json       # Precomputed capacity and VRAM sweep curves
-│
-├── docs/
-│   └── concept-summary.tex       # 1-page Academic Briefing LaTeX source
-│
-├── package.json                 # Node.js project configuration
-└── vite.config.js               # Vite bundler configuration
+Interactive Web Engine
 
-7. Honest Failure Disclosures & Engineering Trade-Offs
-7.1 Finite Associative Horizon
+The browser-side implementation is centered around src/app.js.
 
-A fixed d × d outer-product state cannot store infinite associations without degradation.
+It provides:
 
-It cannot replace external persistent storage such as vector databases or RAG systems for static corpus retrieval.
+60 FPS Float64 matrix simulation
+Interactive Hebbian updates
+Crosstalk visualization
+Draggable telemetry HUD
+Interactive sparsity controls
+Parameter exploration
+MQAR benchmark visualization
+BDH deep-dive results
 
-7.2 Precision & Quantization Limits
+The mathematical simulation executes locally in the browser, avoiding HTTP round trips during parameter changes and allowing real-time interaction.
 
-Softmax attention is scale-invariant under temperature tuning.
+6. Honest Failure Disclosures & Engineering Trade-Offs
+6.1 Finite Associative Horizon
 
-In linear Hebbian recurrence, unbounded rank-1 writes saturate 16-bit floats rapidly.
+A fixed d × d outer-product state cannot store an unlimited number of independent associations without degradation.
 
-Therefore:
+The system is therefore not a replacement for persistent external memory such as vector databases or RAG systems when retrieving information from a large static corpus.
 
-Float32 or Float64 precision is mandatory unless weight normalization is applied.
+Its intended role is closer to adaptive working memory.
 
-7.3 Decay Hyperparameter Sensitivity
+6.2 Precision & Quantization Limits
+
+Hebbian updates repeatedly accumulate rank-1 contributions into the fast-weight matrix.
+
+With unbounded updates, low-precision representations can saturate rapidly.
+
+In particular, 16-bit floating-point representations can become problematic without additional normalization or stabilization.
+
+The reference implementation therefore uses:
+
+Float32, where appropriate for performance.
+Float64 for the interactive numerical simulation and parity verification.
+
+Weight normalization or other stabilization techniques would be required for more aggressive quantization.
+
+6.3 Decay Hyperparameter Sensitivity
 
 When:
 
 λ = 1.00
 
+the system provides permanent retention but is susceptible to accumulated interference and capacity saturation.
 
-the system experiences permanent retention, leading to saturation.
-
-If:
+When:
 
 λ ≤ 0.90
 
+working-memory retention becomes significantly shorter, with older information potentially disappearing within approximately 10–15 tokens under the tested conditions.
 
-working memory vanishes after approximately 10–15 tokens.
-
-Production architectures therefore require dynamic, input-gated decay:
+A production architecture would therefore benefit from dynamic, input-gated decay:
 
 λₜ = σ(W_λxₜ)
 
-8. Reproduction & Execution Guide
-8.1 Interactive Web Visualizer
+This allows the system to adapt its retention behavior according to the incoming information.
+
+7. Reproduction & Execution Guide
+7.1 Interactive Web Visualizer
 
 Prerequisites:
 
@@ -236,20 +239,21 @@ Node.js v18+
 Install Dependencies
 npm install
 
-Start Local Visualizer
+Start the Local Visualizer
 npm run dev
 
-Verify Production Bundle
+Verify the Production Build
 npm run build
 
-8.2 Offline PyTorch Research Suite
+7.2 Offline PyTorch Research Suite
 
 Prerequisites:
 
 Python 3.10+
-Step 1 — Initialize Virtual Environment
+Step 1 — Create the Virtual Environment
 python -m venv .venv
 
+Step 2 — Activate the Environment
 
 Windows PowerShell:
 
@@ -260,28 +264,28 @@ Linux / macOS:
 
 source .venv/bin/activate
 
-Step 2 — Install Dependencies
+Step 3 — Install Dependencies
 pip install -r python/requirements.txt
 
-Step 3 — Generate Synthetic Concept Spaces
+Step 4 — Generate Synthetic Data
 python python/generate_data.py
 
 
-This generates synthetic sparse concept spaces and calibrated crosstalk probes.
+This generates the sparse concept space and calibrated crosstalk probes used by the experiments and visualizer.
 
-Step 4 — Run MQAR Capacity Sweep
+Step 5 — Run the MQAR Capacity Benchmark
 python python/benchmark_capacity.py
 
 
-This runs the Multi-Query Associative Recall (MQAR) capacity benchmark.
+This runs the Multi-Query Associative Recall (MQAR) capacity sweep.
 
-Step 5 — Verify Numerical Parity
+Step 6 — Verify Numerical Parity
 python python/verify_parity.py
 
 
-This asserts numerical parity between the PyTorch reference implementation and the client-side simulation.
+This verifies numerical consistency between the PyTorch reference implementation and the browser-side simulation.
 
-9. Primary Scientific References
+8. Primary Scientific References
 Baby Dragon Hatchling (BDH)
 
 Pathway Research. Dragon Hatchling: From Attention to Synapses. arXiv:2509.26507, 2025.
@@ -297,11 +301,3 @@ Behrouz, A., et al. Titans: Learning to Memorize at Test Time. arXiv:2412.19837,
 Associative Memory Capacity
 
 Hopfield, J. J. Neural Networks and Physical Systems with Emergent Collective Computational Abilities. PNAS, 1982.
-
-Project Status
-
-Synapse Lab combines an interactive browser-based visualization with a reproducible PyTorch research harness to investigate attention as dynamic synaptic wiring.
-
-The central experimental question is:
-
-Can sparse, non-negative Hebbian fast weights provide a fixed-capacity alternative to the linear memory growth of conventional KV caching while maintaining useful associative retrieval?
