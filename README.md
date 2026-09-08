@@ -1,7 +1,3 @@
-Here is the same document with the LaTeX converted to human-readable notation, while keeping the rest as unchanged as possible.
-
- Synapse Lab: Attention as Dynamic Wiring
-
 # Synapse Lab: Attention as Dynamic Wiring
 
  Replacing the Transformer O(T · d) KV-Cache Bottleneck with Fixed-Capacity Hebbian Fast Weights via Non-Negative Sparse Projections.
