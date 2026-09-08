@@ -1,10 +1,13 @@
 """
 Synapse Lab - Reference Comparison Baselines
 Implements the Softmax KV-Cache (O(T*d)) and Dense Linear Attention (100% density).
+
+Primary Citations:
+  - Softmax KV-Cache Attention: Vaswani et al., "Attention Is All You Need", NeurIPS 2017
+  - Linear Attention & Fast Weights: Katharopoulos et al., ICML 2020; Schlag et al., ICML 2021
 """
 
 from typing import List, Optional, Tuple
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,12 +15,12 @@ import torch.nn.functional as F
 
 class SoftmaxKVCacheBaseline(nn.Module):
     """
-    Exact Softmax KV-Cache Attention Baseline.
+    Exact Softmax KV-Cache Attention Baseline [Vaswani et al., 2017].
     
     Stores every historical key and value vector explicitly:
         Cache memory footprint = 2 * T * d * bytes_per_elem (O(T * d))
-    Retrieval evaluates standard scaled dot-product attention:
-        y_hat = softmax(Q K^T / sqrt(d)) V
+    Retrieval evaluates scaled dot-product attention over cached tokens:
+        y_hat = softmax(Q K^T / tau) V
     """
 
     def __init__(
@@ -57,6 +60,8 @@ class SoftmaxKVCacheBaseline(nn.Module):
     def read(self, query: torch.Tensor, temperature: Optional[float] = None) -> torch.Tensor:
         """
         Exact associative retrieval via scaled dot-product attention over cached tokens.
+        Uses a sharp temperature default (tau = 0.1) for normalized unit vectors
+        to preserve exact softmax selection fidelity across arbitrary context sizes.
         """
         if not self.keys_cache:
             return torch.zeros(self.d, device=self.device, dtype=self.dtype)
@@ -65,7 +70,7 @@ class SoftmaxKVCacheBaseline(nn.Module):
         k_stack = torch.stack(self.keys_cache, dim=0)  # (T, d)
         v_stack = torch.stack(self.values_cache, dim=0)  # (T, d)
 
-        scale = temperature or math.sqrt(self.d)
+        scale = temperature or 0.1
         scores = torch.matmul(k_stack, q) / scale  # (T,)
         attn_weights = F.softmax(scores, dim=0)  # (T,)
 
@@ -103,7 +108,7 @@ class SoftmaxKVCacheBaseline(nn.Module):
 
 class DenseLinearAttentionBaseline(nn.Module):
     """
-    Standard Dense Linear Attention / Fast-Weight Recurrent Baseline.
+    Standard Dense Linear Attention / Fast-Weight Recurrent Baseline [Katharopoulos et al., 2020; Schlag et al., 2021].
     
     Maintains a fixed d x d state matrix with dense, unthresholded outer-product updates:
         S_t = lambda * S_{t-1} + v_t k_t^T

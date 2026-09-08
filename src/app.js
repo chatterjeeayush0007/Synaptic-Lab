@@ -1,7 +1,10 @@
 /**
- * Synapse Lab - Core Simulation Engine & UI Controller
- * Dragon Hatchling (BDH) Synaptic Memory & Sparse Activations
- * Integrated with Python Research Backend (associations.json & benchmarks.json)
+ * Synapse Lab - BDH-Inspired Synaptic Fast-Weight Toy Simulator
+ * Core Simulation Engine & UI Controller
+ * 
+ * Demonstrates rank-1 Hebbian fast weights and non-negative sparse activations (~5%)
+ * to reduce associative crosstalk within a constant O(d^2) state footprint.
+ * Integrated with offline PyTorch research artifacts (associations.json & benchmarks.json).
  */
 
 import associationsData from "../python/data/associations.json";
@@ -10,7 +13,7 @@ import benchmarksData from "../python/data/benchmarks.json";
 // Simulation Constants
 const N = associationsData?.metadata?.dimension || 64;
 
-// Fallback Capital Facts in case JSON structure is incomplete
+// Fallback Capital Facts
 const FALLBACK_FACTS = [
   { key: "Paris", value: "France" },
   { key: "Tokyo", value: "Japan" },
@@ -479,7 +482,7 @@ function renderRecall() {
           <svg class="w-3.5 h-3.5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          CATASTROPHIC INTERFERENCE
+          ASSOCIATIVE INTERFERENCE
         </span>
       `;
     } else if (isCrosstalk) {
@@ -488,7 +491,7 @@ function renderRecall() {
           <svg class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          SEVERE CROSSTALK (MARGIN ${(margin * 100).toFixed(0)}%)
+          MODERATE CROSSTALK (MARGIN ${(margin * 100).toFixed(0)}%)
         </span>
       `;
     } else {
@@ -893,7 +896,6 @@ function updateAutoplayButtonUI() {
 
 /**
  * Autoplay Cycle Stepper
- * Automatically shifts sliders to prove biological memory dynamics while user tests queries
  */
 function stepAutoplay() {
   if (!state.autoplayActive || state.tourActive) return;
@@ -931,7 +933,6 @@ function stepAutoplay() {
   updateFormulaDisplay();
   updateMemoryMeter();
 
-  // Pulse new matrix state with rank-1 flash
   recomputeMatrix(true);
 }
 
@@ -957,7 +958,6 @@ function toggleAutoplay() {
   if (state.autoplayActive) {
     stopAutoplay();
   } else {
-    // If walkthrough is running, close it so autoplay can take the canvas
     if (state.tourActive) {
       endGuidedTour();
     } else {
@@ -968,6 +968,7 @@ function toggleAutoplay() {
 
 /**
  * Render precomputed PyTorch benchmarks into View 2 (Deep Dive)
+ * Accurately reads from python/data/benchmarks.json schema
  */
 function renderPyTorchBenchmarks() {
   const tableBody = document.getElementById("benchmark-table-body");
@@ -977,10 +978,10 @@ function renderPyTorchBenchmarks() {
     tableBody.innerHTML = benchmarksData.capacity_vs_facts
       .slice(0, 8)
       .map((row) => {
-        const bdhAcc = (row.bdh_sparse.accuracy_mean * 100).toFixed(1);
+        const bdhAcc = (row.bdh_sparse_toy.accuracy_mean * 100).toFixed(1);
         const denseAcc = (row.dense_linear.accuracy_mean * 100).toFixed(1);
         const kvAcc = (row.softmax_kv.accuracy_mean * 100).toFixed(1);
-        const bdhCos = row.bdh_sparse.cosine_mean.toFixed(4);
+        const bdhCos = row.bdh_sparse_toy.cosine_mean.toFixed(4);
 
         return `
           <tr class="hover:bg-[#0c1322] transition-colors">
@@ -1088,7 +1089,7 @@ function animateSingleSlider(startVal, endVal, durationMs, sliderId, displayId, 
 }
 
 /**
- * Guided Tour Controller
+ * Guided Tour Controller (Scientifically Grounded Framing)
  */
 function startGuidedTour() {
   stopAutoplay();
@@ -1153,24 +1154,24 @@ function renderTourStep(step) {
     updateMemoryMeter();
     recomputeMatrix(true);
 
-    if (titleElem) titleElem.textContent = "Step 1: Clean Associative Memory (BDH Baseline)";
+    if (titleElem) titleElem.textContent = "Step 1: Baseline Associative Memory (BDH Toy Model)";
     if (descElem) {
       descElem.innerHTML = `
-        <p><strong>Input → Synapses → Output:</strong> 3 facts are written to the matrix.</p>
-        <p class="text-slate-400">Querying <span class="font-mono text-sky-300">"${state.selectedQueryKey}"</span> retrieves the target with <strong>100% confidence</strong>. Because activation is sparse (<span class="font-mono text-sky-300">k=4, 6.2%</span>), the outer products occupy isolated synapses with zero crosstalk.</p>
+        <p><strong>Input → Synapses → Output:</strong> 3 facts are written to the recurrent matrix.</p>
+        <p class="text-slate-400">Querying <span class="font-mono text-sky-300">"${state.selectedQueryKey}"</span> retrieves the target with high fidelity. Because activations are non-negative and sparse (<span class="font-mono text-sky-300">k=4, 6.2%</span>), concept representations occupy quasi-orthogonal subspaces, significantly reducing associative crosstalk.</p>
       `;
     }
-    if (nextBtn) nextBtn.textContent = "Step 2: Trigger Catastrophic Interference →";
+    if (nextBtn) nextBtn.textContent = "Step 2: Trigger Associative Interference →";
 
   } else if (step === 2) {
-    if (titleElem) titleElem.textContent = "Step 2: Dual Overload → Catastrophic Interference";
+    if (titleElem) titleElem.textContent = "Step 2: Dense Overload → Associative Interference";
     if (descElem) {
       descElem.innerHTML = `
-        <p>Watch both sliders animate simultaneously: <strong>Stored Facts (3 → 15)</strong> and <strong>Sparsity (k=4 → k=32, 50% Dense)</strong>.</p>
-        <p class="text-slate-400">With 15 facts and dense representations, shared synapses are completely flooded. The candidate spectrum blurs, and recall collapses into <span class="text-rose-400 font-bold">CATASTROPHIC INTERFERENCE</span>!</p>
+        <p>Watch both sliders animate: <strong>Stored Facts (3 → 15)</strong> and <strong>Sparsity (k=4 → k=32, 50% Dense)</strong>.</p>
+        <p class="text-slate-400">With 15 facts and dense representations, shared synapses suffer heavy cross-term accumulation. The candidate spectrum blurs, triggering <span class="text-rose-400 font-bold">ASSOCIATIVE INTERFERENCE</span> and degraded retrieval!</p>
       `;
     }
-    if (nextBtn) nextBtn.textContent = "Step 3: See BDH Sparsity Rescue Memory →";
+    if (nextBtn) nextBtn.textContent = "Step 3: See Sparse Subspaces Mitigate Crosstalk →";
 
     animateDualSliders(3, 15, 4, 32, 2400, (factsVal, kVal) => {
       state.factsCount = factsVal;
@@ -1189,11 +1190,11 @@ function renderTourStep(step) {
     renderFactList();
     updateQueryDropdown();
 
-    if (titleElem) titleElem.textContent = "Step 3: How BDH Sparsity Rescues Recall";
+    if (titleElem) titleElem.textContent = "Step 3: How Non-Negative Sparsity Mitigates Crosstalk";
     if (descElem) {
       descElem.innerHTML = `
-        <p>Keeping <strong>8 facts</strong> in memory, watch the <strong>Sparsity slider slide back down from k=32 → k=3 (~4.7%)</strong>.</p>
-        <p class="text-slate-400">By activating only ~5% of neurons, concept vectors project into vast orthogonal subspaces. Synaptic crosstalk vanishes, and high-fidelity recall is restored!</p>
+        <p>Keeping <strong>8 facts</strong> in memory, watch the <strong>Sparsity slider return from k=32 → k=3 (~4.7%)</strong>.</p>
+        <p class="text-slate-400">By activating only ~5% of units, concept vectors project into quasi-orthogonal subspaces. Unintended cross-terms vanish almost surely, restoring high-fidelity associative recall!</p>
       `;
     }
     if (nextBtn) nextBtn.textContent = "Explore Interactive Sandbox 🎉";
@@ -1220,7 +1221,6 @@ function endGuidedTour() {
   const overlay = document.getElementById("tour-overlay-container");
   if (overlay) overlay.classList.add("hidden");
 
-  // When walkthrough is finished or skipped, Autoplay turns ON automatically!
   startAutoplay();
 }
 window.endGuidedTour = endGuidedTour;
@@ -1238,14 +1238,12 @@ function setupEventListeners() {
   const contextSlider = document.getElementById("slider-context");
   const autoplayBtn = document.getElementById("btn-autoplay");
 
-  // Autoplay button listener
   if (autoplayBtn) {
     autoplayBtn.addEventListener("click", () => {
       toggleAutoplay();
     });
   }
 
-  // Sparsity slider
   if (kSlider && kDisplay) {
     kSlider.addEventListener("input", (e) => {
       const val = parseInt(e.target.value, 10);
@@ -1256,7 +1254,6 @@ function setupEventListeners() {
     });
   }
 
-  // Facts written slider
   if (factsSlider && factsDisplay) {
     factsSlider.max = state.facts.length;
     factsSlider.addEventListener("input", (e) => {
@@ -1269,7 +1266,6 @@ function setupEventListeners() {
     });
   }
 
-  // Decay lambda slider
   if (lambdaSlider && lambdaDisplay) {
     lambdaSlider.addEventListener("input", (e) => {
       const val = parseFloat(e.target.value);
@@ -1280,7 +1276,6 @@ function setupEventListeners() {
     });
   }
 
-  // Context length T scaling slider
   if (contextSlider) {
     contextSlider.addEventListener("input", (e) => {
       state.contextTokens = parseInt(e.target.value, 10);
@@ -1288,7 +1283,6 @@ function setupEventListeners() {
     });
   }
 
-  // Fact Search filter input
   const searchInput = document.getElementById("search-facts");
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
@@ -1297,7 +1291,6 @@ function setupEventListeners() {
     });
   }
 
-  // Quick Simulation Presets
   const presetBdh = document.getElementById("preset-bdh");
   const presetStress = document.getElementById("preset-stress");
   const presetDense = document.getElementById("preset-dense");
@@ -1359,7 +1352,6 @@ function setupEventListeners() {
     });
   }
 
-  // Reset button
   const resetBtn = document.getElementById("btn-reset");
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
@@ -1392,7 +1384,6 @@ function setupEventListeners() {
     });
   }
 
-  // Query dropdown select
   const querySelect = document.getElementById("query-select");
   if (querySelect) {
     querySelect.addEventListener("change", (e) => {
@@ -1401,7 +1392,6 @@ function setupEventListeners() {
     });
   }
 
-  // Recall button
   const recallBtn = document.getElementById("btn-recall");
   if (recallBtn) {
     recallBtn.addEventListener("click", () => {
@@ -1411,7 +1401,6 @@ function setupEventListeners() {
     });
   }
 
-  // Tab switching
   const tabMatrix = document.getElementById("tab-matrix");
   const tabDeepDive = document.getElementById("tab-deepdive");
   const viewMatrix = document.getElementById("view-matrix");
@@ -1482,15 +1471,9 @@ function setupEventListeners() {
     }
   }
 
-  if (openSpecsBtn) {
-    openSpecsBtn.addEventListener("click", openSpecsModal);
-  }
-  if (specsCloseBtn) {
-    specsCloseBtn.addEventListener("click", closeSpecsModal);
-  }
-  if (specsCloseBottomBtn) {
-    specsCloseBottomBtn.addEventListener("click", closeSpecsModal);
-  }
+  if (openSpecsBtn) openSpecsBtn.addEventListener("click", openSpecsModal);
+  if (specsCloseBtn) specsCloseBtn.addEventListener("click", closeSpecsModal);
+  if (specsCloseBottomBtn) specsCloseBottomBtn.addEventListener("click", closeSpecsModal);
   if (specsModalContainer) {
     specsModalContainer.addEventListener("click", (e) => {
       if (e.target === specsModalContainer) {
@@ -1507,15 +1490,9 @@ function setupEventListeners() {
   const tourSkipBtn = document.getElementById("tour-skip-btn");
   const tourSkipBottomBtn = document.getElementById("tour-skip-bottom-btn");
   const tourNextBtn = document.getElementById("tour-next-btn");
-  if (tourSkipBtn) {
-    tourSkipBtn.addEventListener("click", () => endGuidedTour());
-  }
-  if (tourSkipBottomBtn) {
-    tourSkipBottomBtn.addEventListener("click", () => endGuidedTour());
-  }
-  if (tourNextBtn) {
-    tourNextBtn.addEventListener("click", () => advanceGuidedTour());
-  }
+  if (tourSkipBtn) tourSkipBtn.addEventListener("click", () => endGuidedTour());
+  if (tourSkipBottomBtn) tourSkipBottomBtn.addEventListener("click", () => endGuidedTour());
+  if (tourNextBtn) tourNextBtn.addEventListener("click", () => advanceGuidedTour());
 }
 
 /**
@@ -1558,11 +1535,9 @@ window.addEventListener("DOMContentLoaded", () => {
   setupDraggableHUD();
   updateMemoryMeter();
   updateAutoplayButtonUI();
-  renderPyTorchBenchmarks();
 
   recomputeMatrix(true);
 
-  // Initial load starts walkthrough HUD
   setTimeout(() => {
     startGuidedTour();
   }, 250);

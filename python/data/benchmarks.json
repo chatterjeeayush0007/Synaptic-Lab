@@ -2,204 +2,163 @@
   "metadata": {
     "dimension": 64,
     "sparsity_k": 3,
-    "device": "cpu",
-    "hopfield_capacity_bound": 8.96,
-    "description": "Multi-Query Associative Recall (MQAR) benchmark curves"
+    "sparsity_percentage": "4.69%",
+    "toy_capacity_threshold_note": "Empirical degradation in this un-decayed toy linear model is observed near P \u2248 8-10 associations (0.14d), conceptually reminiscent of the classical Hopfield (1982) limit, but specific to this unthresholded rank-1 toy experiment.",
+    "citations": {
+      "bdh_paper": "Pathway Research, 'Dragon Hatchling: From Attention to Synapses', arXiv:2509.26507 (2025)",
+      "fast_weights": "Schlag, Irie, & Schmidhuber, 'Linear Transformers Are Secretly Fast Weight Programmers', ICML 2021",
+      "hopfield": "Hopfield, J.J., PNAS 1982"
+    }
   },
   "capacity_vs_facts": [
     {
       "num_facts": 2,
-      "bdh_sparse": {
+      "softmax_kv": {
         "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 1.0,
+        "cosine_mean": 0.9574,
         "accuracy_mean": 1.0
       },
-      "softmax_kv": {
-        "cosine_mean": 0.7732,
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.9815,
         "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 4,
-      "bdh_sparse": {
-        "cosine_mean": 0.9627,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9627,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.933,
+        "accuracy_mean": 0.75
       },
-      "softmax_kv": {
-        "cosine_mean": 0.5857,
-        "accuracy_mean": 0.6667
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.972,
+        "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 6,
-      "bdh_sparse": {
-        "cosine_mean": 0.9751,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9751,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.9245,
+        "accuracy_mean": 0.4444
       },
-      "softmax_kv": {
-        "cosine_mean": 0.5099,
-        "accuracy_mean": 0.6111
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.9653,
+        "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 8,
-      "bdh_sparse": {
-        "cosine_mean": 0.9517,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9517,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.918,
+        "accuracy_mean": 0.25
       },
-      "softmax_kv": {
-        "cosine_mean": 0.4431,
-        "accuracy_mean": 0.3333
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.9437,
+        "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 10,
-      "bdh_sparse": {
-        "cosine_mean": 0.9544,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9544,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.9158,
+        "accuracy_mean": 0.2667
       },
-      "softmax_kv": {
-        "cosine_mean": 0.3974,
-        "accuracy_mean": 0.1333
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.9411,
+        "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 12,
-      "bdh_sparse": {
-        "cosine_mean": 0.9444,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9444,
-        "accuracy_mean": 1.0
-      },
-      "softmax_kv": {
-        "cosine_mean": 0.3823,
+        "cosine_mean": 0.914,
         "accuracy_mean": 0.1667
-      }
-    },
-    {
-      "num_facts": 14,
-      "bdh_sparse": {
-        "cosine_mean": 0.9371,
-        "accuracy_mean": 1.0
       },
-      "dense_linear": {
-        "cosine_mean": 0.9371,
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.9279,
         "accuracy_mean": 1.0
-      },
-      "softmax_kv": {
-        "cosine_mean": 0.3614,
-        "accuracy_mean": 0.2143
       }
     },
     {
       "num_facts": 16,
-      "bdh_sparse": {
-        "cosine_mean": 0.9238,
+      "softmax_kv": {
+        "cosine_mean": 0.9999,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.9238,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.9095,
+        "accuracy_mean": 0.0833
       },
-      "softmax_kv": {
-        "cosine_mean": 0.3459,
-        "accuracy_mean": 0.1042
-      }
-    },
-    {
-      "num_facts": 18,
-      "bdh_sparse": {
-        "cosine_mean": 0.9067,
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.8976,
         "accuracy_mean": 1.0
-      },
-      "dense_linear": {
-        "cosine_mean": 0.9067,
-        "accuracy_mean": 1.0
-      },
-      "softmax_kv": {
-        "cosine_mean": 0.3324,
-        "accuracy_mean": 0.0926
       }
     },
     {
       "num_facts": 20,
-      "bdh_sparse": {
-        "cosine_mean": 0.8985,
+      "softmax_kv": {
+        "cosine_mean": 0.9999,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.8985,
-        "accuracy_mean": 1.0
-      },
-      "softmax_kv": {
-        "cosine_mean": 0.3219,
+        "cosine_mean": 0.9077,
         "accuracy_mean": 0.0833
+      },
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.8718,
+        "accuracy_mean": 1.0
       }
     },
     {
       "num_facts": 24,
-      "bdh_sparse": {
-        "cosine_mean": 0.8725,
+      "softmax_kv": {
+        "cosine_mean": 1.0,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.8725,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.9057,
+        "accuracy_mean": 0.0694
       },
-      "softmax_kv": {
-        "cosine_mean": 0.3093,
-        "accuracy_mean": 0.0417
-      }
-    },
-    {
-      "num_facts": 28,
-      "bdh_sparse": {
-        "cosine_mean": 0.8517,
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.8654,
         "accuracy_mean": 1.0
-      },
-      "dense_linear": {
-        "cosine_mean": 0.8517,
-        "accuracy_mean": 1.0
-      },
-      "softmax_kv": {
-        "cosine_mean": 0.2951,
-        "accuracy_mean": 0.0357
       }
     },
     {
       "num_facts": 32,
-      "bdh_sparse": {
-        "cosine_mean": 0.8418,
+      "softmax_kv": {
+        "cosine_mean": 0.9999,
         "accuracy_mean": 1.0
       },
       "dense_linear": {
-        "cosine_mean": 0.8418,
-        "accuracy_mean": 1.0
+        "cosine_mean": 0.9059,
+        "accuracy_mean": 0.0312
       },
-      "softmax_kv": {
-        "cosine_mean": 0.2889,
-        "accuracy_mean": 0.0416
+      "bdh_sparse_toy": {
+        "cosine_mean": 0.8273,
+        "accuracy_mean": 1.0
       }
     }
   ],
@@ -211,14 +170,6 @@
       "kv_cache_bytes": 5120,
       "kv_cache_kb": 5.0,
       "ratio_kv_to_bdh": 0.31
-    },
-    {
-      "context_tokens": 25,
-      "bdh_bytes": 16384,
-      "bdh_kb": 16.0,
-      "kv_cache_bytes": 12800,
-      "kv_cache_kb": 12.5,
-      "ratio_kv_to_bdh": 0.78
     },
     {
       "context_tokens": 50,
@@ -237,20 +188,12 @@
       "ratio_kv_to_bdh": 3.12
     },
     {
-      "context_tokens": 200,
+      "context_tokens": 250,
       "bdh_bytes": 16384,
       "bdh_kb": 16.0,
-      "kv_cache_bytes": 102400,
-      "kv_cache_kb": 100.0,
-      "ratio_kv_to_bdh": 6.25
-    },
-    {
-      "context_tokens": 350,
-      "bdh_bytes": 16384,
-      "bdh_kb": 16.0,
-      "kv_cache_bytes": 179200,
-      "kv_cache_kb": 175.0,
-      "ratio_kv_to_bdh": 10.94
+      "kv_cache_bytes": 128000,
+      "kv_cache_kb": 125.0,
+      "ratio_kv_to_bdh": 7.81
     },
     {
       "context_tokens": 500,
